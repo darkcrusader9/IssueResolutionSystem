@@ -20,7 +20,7 @@ public class Issue {
         this.subject = subject;
         this.description = description;
         this.customerEmail = customerEmail;
-        this.status = IssueStatus.OPEN;
+        this.status = IssueStatus.WAITING;
     }
 
     public String getIssueId() { return issueId; }

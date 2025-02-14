@@ -9,6 +9,7 @@ public class Agent {
     private String agentEmail;
     private String name;
     private Set<IssueType> expertise;
+    //Assumption: agent can handle single issue at a time, because any other available agent should look into issue
     private Issue currentIssue;
     private List<Issue> workHistory;
 
@@ -28,6 +29,7 @@ public class Agent {
     }
 
     public void assignIssue(Issue issue) {
+        issue.setStatus(IssueStatus.OPEN);
         this.currentIssue = issue;
     }
 

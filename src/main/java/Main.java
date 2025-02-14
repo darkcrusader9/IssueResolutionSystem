@@ -35,7 +35,14 @@ public class Main {
         System.out.println(system.getIssues(searchByType));
 
         system.updateIssue("I3", "OPEN", "Waiting for payment confirmation");
-        system.resolveIssue("I3", "PaymentFailed debited amount will get reversed");
+
+        system.resolveIssue("I1", "PaymentFailed debited amount will get reversed");
+        system.resolveIssue("I2", "Transient issue");
+        //I3 is getting resolved by Agent 1 as soon as he resolves issue 1
+        system.resolveIssue("I3", "Transient issue");
+
+        List<SearchSpecification> searchByEmail2 = Collections.singletonList(new CustomerEmailSpecification("testUser2@test.com"));
+        System.out.println(system.getIssues(searchByEmail2));
 
         system.viewAgentsWorkHistory();
     }

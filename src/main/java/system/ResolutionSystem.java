@@ -16,6 +16,7 @@ public class ResolutionSystem {
     private Map<String, Issue> issues;
     private Map<String, Agent> agents;
     private Map<String, String> issueAgentMap;
+    //Backlog is maintained by sytem and not a single agent
     private Queue<Issue> backlog;
     private AssignmentStrategy assignmentStrategy;
     private SearchService searchService;
@@ -43,15 +44,17 @@ public class ResolutionSystem {
     public void createIssue(String transactionId, IssueType issueType, String subject, String description, String email) {
         Issue issue = IssueFactory.createIssue(transactionId, issueType, subject, description, email);
         issues.put(issue.getIssueId(), issue);
-        String agentId = assignIssue(issue.getIssueId());
-        System.out.println("Issue " + issue.getIssueId() + " created against transaction " + transactionId + (agentId != null ? " and assigned to " + agentId + "." : " and added to backlog."));
+        //For faster resolution we should assign any avaiable agent as soon as a issue is created.
+        //String agentId = assignIssue(issue.getIssueId());
+        System.out.println("Issue " + issue.getIssueId() + " created against transaction " + transactionId);
     }
 
     public void addAgent(String agentEmail, String name, List<IssueType> expertise) {
         Agent agent = new Agent(agentEmail, name, expertise);
         agents.put(agentEmail, agent);
         System.out.println("Agent " + name + " added");
-        reassignBacklog();
+        //ideally right after creating agent it should get any issues that is in backlog
+        //reassignBacklog();
     }
 
     public String assignIssue(String issueId) {
@@ -61,7 +64,8 @@ public class ResolutionSystem {
             if (agentId != null) {
                 issueAgentMap.put(issueId, agentId);
                 System.out.println("Issue " + issueId + " assigned to agent " + agentId + ".");
-            } else {
+            }
+            else {
                 System.out.println("Issue " + issueId + " added to backlog.");
             }
             return agentId;
@@ -86,6 +90,9 @@ public class ResolutionSystem {
             agent.resolveIssue(resolution);
             System.out.println("Issue " + issueId + " resolved. " + "by " + agent.getName());
             issueAgentMap.remove(issueId);
+            /*IMPORTANT: For a faster performing system, whenever an agent is free after
+             resolving the issue, we should call reassign to appropriate agent
+             */
             reassignBacklog();
         } else {
             System.out.println("No agent found for issue " + issueId);
@@ -93,14 +100,15 @@ public class ResolutionSystem {
     }
 
     private void reassignBacklog() {
-        Iterator<Issue> iterator = backlog.iterator();
+        Queue<Issue> tempQueue = new LinkedList<>(backlog);
+        backlog.clear();
 
-        while (iterator.hasNext()) {
-            Issue issue = iterator.next();
+        while (!tempQueue.isEmpty()) {
+            Issue issue = tempQueue.poll();
             String agentId = assignIssue(issue.getIssueId());
 
-            if (agentId != null) {
-                iterator.remove(); // Safe removal while iterating
+            if (agentId == null) {
+                backlog.offer(issue);
             }
         }
     }
